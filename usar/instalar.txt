@@ -1,0 +1,1 @@
+Após abrir o programa, o usuário dará de cara um meno de itens, logo em seguida, ele irá escolher qual produto quer comprar. Simples assim.
