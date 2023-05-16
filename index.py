@@ -1,3 +1,7 @@
+#Mensagens (prints) de carregamento deve ficar em VERDE
+#Mensagens de falha em VERMELHO
+#Nome de operadores em LARANJA
+
 import sqlite3
 conexao = sqlite3.connect('lanche_plus\BancoProdutos.sqlite3')
 cursor = conexao.cursor()
@@ -20,10 +24,10 @@ def Login():
     cursor.execute("SELECT senha, nm_usuario FROM Usuario")
     usuario = int(input("DIGITE SUA SENHA: "))
     login = []
-    print('CARREGANDO INFORMAÇÕES...')
+    print('\033[32mCARREGANDO INFORMAÇÕES...\033[37m')
     for login in cursor.fetchall():
         if usuario == login[0]:
-            print(f'OPERADOR: {login[1]}')
+            print(f'OPERADOR: \033[38;5;208m{login[1]}\033[37m')
             Comanda()
 
         else:
@@ -34,7 +38,7 @@ def Comanda():
     return True
 
 # SISTEMA DE ESCOLHA DE PRODUTOS
-print('-'*30+'\n\033[33mBEM VINDO AO SISTEMA DE LANÇAMENTO DA LANCHE+\033[37m\n'+'-'*30)
+print('-'*50+'\n\033[33mBEM VINDO AO SISTEMA DE LANÇAMENTO DA LANCHE+\033[37m\n'+'-'*50)
 Login()
 
 conexao.commit()
