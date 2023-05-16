@@ -35,7 +35,22 @@ def Login():
         break
     
 def Comanda():
-    return True
+    comanda_off = int(input("DIGITE O NUMERO DA COMANDA: ")) # COMANDA DE MANIPULÇÃO DO OPERADOR
+    # BUSCANDO NO BANCO DE DADOS SE A COMANDA ESTÁ DISPONÍVEL
+    cursor.execute("SELECT id_comanda, nmr_comanda, nm_comanda, dt_aberto_comanda, usuario_id FROM Comanda")
+    comanda_on = [] # COMANDA DE CONSULTA
+    for comanda_on in cursor.fetchall():
+        operador = comanda_on[4]
+        if comanda_off == comanda_on[1]:
+            print("ESSA COMANDA JÁ ESTÁ EM UTILIZAÇÃO!")
+            print(f'\033[33mCOMANDA: \033[37m{comanda_on[1]}\n\033[33mMESA: \033[37m{comanda_on[2]}\033[33m\nABERTO EM: \033[37m{comanda_on[3]}\033[33m')
+    Operador(operador)
+
+def Operador(operador):
+    cursor.execute(f'SELECT nm_usuario FROM Usuario WHERE id_usuario={operador};')
+    garcom = []
+    for garcom in cursor.fetchall():
+        print(f'\033[33mABERTO POR: \033[37m{garcom[0]}')
 
 # SISTEMA DE ESCOLHA DE PRODUTOS
 print('-'*50+'\n\033[33mBEM VINDO AO SISTEMA DE LANÇAMENTO DA LANCHE+\033[37m\n'+'-'*50)
