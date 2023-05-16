@@ -1,5 +1,5 @@
 import sqlite3
-conexao = sqlite3.connect('BancoProdutos.sqlite3')
+conexao = sqlite3.connect('lanche_plus\BancoProdutos.sqlite3')
 cursor = conexao.cursor()
 #COMANDOS SQL EM FUNÇÕES
 def Menu():
