@@ -1,5 +1,10 @@
 # lanche_plus
-O sistema da Lanche+ terá funcionamento local e contará com várias funções de controle de vendas. Pensado unicamente para ser uma ferramenta para funcionários e não
-clientes, o Lanche_Plus_Controle contará com um sistema de salvamento de dados em comandas - distinas por um número de 3 casas decimais - e um cardápio extenso. 
+O sistema da Lanche+ será um clone do sistema de controle conhecido como COLIBRI, entretanto, não contará com interface gráfica e muito menos com suporte. Por se tratar de um projeto unicamente com a intenção de estudos.
 
-A tentativa de clonar o software da Colibri aqui é clara, por isso deixo claro minha intenção de criar um sistema apenas para uso educativo.
+SEGUEM ALGUNS ATRIBUTOS DO SISTEMA:
+- Cadastro de Usuários
+- Cadastro de Produtos
+- Sistema de Permições
+- Histórico
+- Fechamento de Caixa
+- Sistema de Comandas
