@@ -3,11 +3,7 @@
 #Nome de operadores em LARANJA
 
 import sqlite3
-<<<<<<< HEAD
-conexao = sqlite3.connect('lanche_plus\BancoProdutos.sqlite3')
-=======
 conexao = sqlite3.connect("lanche_plus\bank\BancoProdutos.sqlite3")
->>>>>>> develop
 cursor = conexao.cursor()
 #COMANDOS SQL EM FUNÇÕES
 def Menu():
