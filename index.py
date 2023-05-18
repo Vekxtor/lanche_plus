@@ -3,7 +3,7 @@
 #Nome de operadores em LARANJA
 
 import sqlite3
-conexao = sqlite3.connect("lanche_plus\bank\BancoProdutos.sqlite3")
+conexao = sqlite3.connect('bank\BancoProdutos.sqlite3')
 cursor = conexao.cursor()
 #COMANDOS SQL EM FUNÇÕES
 def Menu():
@@ -55,12 +55,12 @@ def Operador(operador): #BUSACNDO NA TABELA USUARIO QUEM FOI O GARÇOM QUE ABRIU
         print(f'\033[33mABERTO POR: \033[37m{garcom[0]}')
 
 def Produtos(comanda):
-    itens_da_comanda = cursor.execute(f'SELECT id_ProdutoComanda, produto_id, comanda_id FROM ProdutoComanda WHERE id_ProdutoComanda={comanda};')
-    buscar_produto = cursor.execute(f'SELECT id_produto, nm_produto, vlr_produto, cd_produto, categoria_id FROM Produto')
-    
-    for itens_da_comanda[1] in buscar_produto[0]:
-        if itens_da_comanda[1] == buscar_produto[0]:
-            print(f'\033[33mITENS DA COMANDA: \033[37m{buscar_produto[1]}')
+    print("\033[33mPRODUTOS CADASTRADOS NA COMANDA:\033[37m")
+    for itens_da_comanda in cursor.execute(f'SELECT id_ProdutoComanda, produto_id, qtd_produto FROM ProdutoComanda WHERE id_ProdutoComanda={comanda};'):
+        for produto_da_comanda in cursor.execute(f'SELECT nm_produto, vlr_produto FROM Produto WHERE id_produto = {itens_da_comanda[1]}'):
+            total_produto = itens_da_comanda[2] * produto_da_comanda[1]
+            print(f'\033[33m{itens_da_comanda[0]}) \033[37m{produto_da_comanda[0]} \033[33mx\033[37m {itens_da_comanda[2]} \033[33m=\033[37m {produto_da_comanda[1]}0 \033[33m|R$\033[37m {total_produto}0')
+        
 
 # SISTEMA DE ESCOLHA DE PRODUTOS
 print('-'*50+'\n\033[33mBEM VINDO AO SISTEMA DE LANÇAMENTO DA LANCHE+\033[37m\n'+'-'*50)

@@ -1,0 +1,29 @@
+{
+	"folders": {},
+	"connections": {
+		"sqlite_jdbc-1882c66c4b8-4f4e3909ea55fdd": {
+			"provider": "sqlite",
+			"driver": "sqlite_jdbc",
+			"name": "BancoProdutos.sqlite3",
+			"save-password": true,
+			"configuration": {
+				"database": "E:\\Documentos (E)\\GitHub\\Lanches+\\lanche_plus\\bank\\BancoProdutos.sqlite3",
+				"url": "jdbc:sqlite:E:\\Documentos (E)\\GitHub\\Lanches+\\lanche_plus\\bank\\BancoProdutos.sqlite3",
+				"configurationType": "MANUAL",
+				"type": "dev",
+				"auth-model": "native"
+			}
+		}
+	},
+	"connection-types": {
+		"dev": {
+			"name": "Development",
+			"color": "255,255,255",
+			"description": "Regular development database",
+			"auto-commit": true,
+			"confirm-execute": false,
+			"confirm-data-change": false,
+			"auto-close-transactions": false
+		}
+	}
+}
