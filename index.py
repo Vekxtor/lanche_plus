@@ -21,8 +21,8 @@ def Escolha():
             print(f'{escolha} = {produto_banco}')
 
 def Login():
-    cursor.execute("SELECT senha, nm_usuario FROM Usuario")
     usuario = int(input("DIGITE SUA SENHA: "))
+    cursor.execute("SELECT senha, nm_usuario FROM Usuario WHERE senha = ?", (usuario,))
     login = []
     print('\033[32mCARREGANDO INFORMAÇÕES...\033[37m')
     for login in cursor.fetchall():
