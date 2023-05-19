@@ -1,7 +1,7 @@
 #Mensagens (prints) de carregamento deve ficar em VERDE
 #Mensagens de falha em VERMELHO
 #Nome de operadores em LARANJA
-
+import pandas as pd
 import sqlite3
 conexao = sqlite3.connect('bank\BancoProdutos.sqlite3')
 cursor = conexao.cursor()
@@ -56,14 +56,35 @@ def Operador(operador): #BUSACNDO NA TABELA USUARIO QUEM FOI O GARÇOM QUE ABRIU
 
 def Produtos(comanda):
     print("\033[33mPRODUTOS CADASTRADOS NA COMANDA:\033[37m")
-    for itens_da_comanda in cursor.execute(f'SELECT id_ProdutoComanda, produto_id, qtd_produto FROM ProdutoComanda WHERE id_ProdutoComanda={comanda};'):
-        for produto_da_comanda in cursor.execute(f'SELECT nm_produto, vlr_produto FROM Produto WHERE id_produto = {itens_da_comanda[1]}'):
-            total_produto = itens_da_comanda[2] * produto_da_comanda[1]
-            print(f'\033[33m{itens_da_comanda[0]}) \033[37m{produto_da_comanda[0]} \033[33mx\033[37m {itens_da_comanda[2]} \033[33m=\033[37m {produto_da_comanda[1]}0 \033[33m|R$\033[37m {total_produto}0')
-        
+    comanda_id = comanda
+    produtos_na_comanda = cursor.execute("SELECT * FROM ProdutoComanda WHERE comanda_id = ?", (comanda_id,))
+    for ProdutoComanda in produtos_na_comanda.fetchall():
+        id_produtos = ProdutoComanda[1]
+        produtos = cursor.execute("SELECT * FROM Produto WHERE id_produto = ?", (id_produtos,))
+        for nm_produtos in produtos.fetchall():
+            ValorProdutoTotal = nm_produtos[3] * ProdutoComanda[3]
+            
+            #FROMATAÇÃO DOS VALORES PARA ADEQUAÇÃO NA ENTRADA PARA O DICIONARIO
+            valor_format = f'R${nm_produtos[3]}0'
+            quantidade_format = f'{ProdutoComanda[3]}xUN'
+            codigo_format = f'{nm_produtos[4]})\033[0m'
+            valorTotal_format = f'R${ValorProdutoTotal}0'
+            valorString = 'VALOR TOTAL:'
+            
+            #DICIONARIO
+            exibicao = {
+                codigo_format : [quantidade_format],
+                nm_produtos[1] : [valor_format],
+                valorString:[valorTotal_format]
+            }
+
+            exibicao_df = pd.DataFrame(exibicao)
+            print(exibicao_df.to_string(index=False))
+
+            
 
 # SISTEMA DE ESCOLHA DE PRODUTOS
-print('-'*50+'\n\033[33mBEM VINDO AO SISTEMA DE LANÇAMENTO DA LANCHE+\033[37m\n'+'-'*50)
+print('-'*50+'\n\033[33mBEM VINDO AO SISTEMA DE LANÇAMENTO DA LANCHE+\033[37m \n'+'-'*50)
 Login()
 
 conexao.commit()
