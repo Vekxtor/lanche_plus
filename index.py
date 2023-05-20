@@ -3,6 +3,7 @@
 #Nome de operadores em LARANJA
 import pandas as pd
 import sqlite3
+from datetime import datetime
 conexao = sqlite3.connect('bank\BancoProdutos.sqlite3')
 cursor = conexao.cursor()
 #COMANDOS SQL EM FUNÇÕES
@@ -22,37 +23,49 @@ def Escolha():
 
 def Login():
     usuario = int(input("DIGITE SUA SENHA: "))
-    cursor.execute("SELECT senha, nm_usuario FROM Usuario WHERE senha = ?", (usuario,))
+    cursor.execute("SELECT senha, nm_usuario, id_usuario FROM Usuario WHERE senha = ?", (usuario,))
     print('\033[32mCARREGANDO INFORMAÇÕES...\033[37m')
 
     login = cursor.fetchone()  # Recupera apenas um resultado
 
     if login is not None and usuario == login[0]:
+        id_usuario = login[2]
         print(f'OPERADOR: \033[38;5;208m{login[1]}\033[37m')
-        Comanda()
+        Comanda(id_usuario)
     else:
         print('\033[91mSENHA INVÁLIDA\033[0m')
 
 
     
-def Comanda():
+def Comanda(id_usuario):
     comanda_off = int(input("DIGITE O NUMERO DA COMANDA: ")) #COMANDA DE MANIPULÇÃO DO OPERADOR
     #BUSCANDO NO BANCO DE DADOS SE A COMANDA ESTÁ DISPONÍVEL
-    cursor.execute("SELECT id_comanda, nmr_comanda, nm_comanda, dt_aberto_comanda, usuario_id FROM Comanda")
-    comanda_on = [] # COMANDA DE CONSULTA
-    for comanda_on in cursor.fetchall():
+    cursor.execute("SELECT id_comanda, nmr_comanda, nm_comanda, dt_aberto_comanda, usuario_id FROM Comanda WHERE nmr_comanda = ?", (comanda_off,))
+    comanda_on = cursor.fetchone()
+    
+    if comanda_on is not None and comanda_off == comanda_on[1]:
         numero_da_comanda = comanda_on[0]
         operador = comanda_on[4]
-        if comanda_off == comanda_on[1]: #A COMANDA JÁ ESTÁ ABERTA
-            print("ESSA COMANDA JÁ ESTÁ EM UTILIZAÇÃO!")
-            print(f'\033[33mCOMANDA: \033[37m{comanda_on[1]}\n\033[33mMESA: \033[37m{comanda_on[2]}\033[33m\nABERTO EM: \033[37m{comanda_on[3]}\033[33m')
-            Operador(operador)
-            Produtos(numero_da_comanda)
+        
+        print("ESSA COMANDA JÁ ESTÁ EM UTILIZAÇÃO!")
+        print(f'\033[33mCOMANDA: \033[37m{comanda_on[1]}\n\033[33mMESA: \033[37m{comanda_on[2]}\033[33m\nABERTO EM: \033[37m{comanda_on[3]}\033[33m')
+        Operador(operador)
+        Produtos(numero_da_comanda)
 
-        else:
-            print('\033[91m' + 'ESTA COMANDA ESTÁ VAZIA\nDIGITE O NÚMERO DA MESA: ' + '\033[0m')
-            NmrMesa = int(input())
+    else:
+        print('\033[91m' + 'ESTA COMANDA ESTÁ VAZIA' + '\033[0m')
+        CriarComanda(comanda_off, id_usuario)
 
+def CriarComanda(comanda, id_usuario):
+    NmrMesa = int(input('DIGITE O NÚMERO DA MESA: '))
+    agora = datetime.now()
+    horario_atual = agora.strftime("%H:%M:%S")
+    cursor.execute("INSERT INTO Comanda (nmr_comanda, nm_comanda, dt_aberto_comanda, usuario_id) VALUES (?, ?, ?, ?)", (comanda, NmrMesa, horario_atual, id_usuario,))
+    conexao.commit()
+    Lancamento()
+
+def Lancamento():
+    return True
 
 def Operador(operador): #BUSACNDO NA TABELA USUARIO QUEM FOI O GARÇOM QUE ABRIU A COMANDA
     cursor.execute(f'SELECT nm_usuario FROM Usuario WHERE id_usuario={operador};')
