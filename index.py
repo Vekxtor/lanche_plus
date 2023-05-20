@@ -60,12 +60,37 @@ def CriarComanda(comanda, id_usuario):
     NmrMesa = int(input('DIGITE O NÚMERO DA MESA: '))
     agora = datetime.now()
     horario_atual = agora.strftime("%H:%M:%S")
+    
     cursor.execute("INSERT INTO Comanda (nmr_comanda, nm_comanda, dt_aberto_comanda, usuario_id) VALUES (?, ?, ?, ?)", (comanda, NmrMesa, horario_atual, id_usuario,))
     conexao.commit()
-    Lancamento()
 
-def Lancamento():
-    return True
+    Lancamento(comanda) #ENVIANDO PARA A FUNÇÃO DE LANÇAMENTO QUAL É O NÚMERO DA COMANDA QUE FOI DIGITADO PELO USUARIO
+
+def Lancamento(comanda):
+    cursor.execute("SELECT id_comanda, nmr_comanda FROM Comanda WHERE nmr_comanda = ?", (comanda,))
+    idComanda = cursor.fetchone()
+
+    if idComanda is not None and idComanda[1] == comanda:
+        FKComanda = idComanda[0]
+
+        stop = False
+        while stop == False:
+            codProduto = int(input("DIGITE O CÓDIGO DO PRODUTO:\n"))
+            quantidade = int(input("DIGITE A QUANTIDADE DESEJADA: "))
+
+            #DESCOBRINDO QUAL É O ID_PRODUTO
+            cursor.execute("SELECT id_produto, cd_produto, nm_produto FROM Produto WHERE cd_produto = ?", (codProduto,))
+            idProduto = cursor.fetchone()
+            if idProduto is not None and idProduto[1] == codProduto:
+                cursor.execute("INSERT INTO ProdutoComanda (produto_id, comanda_id, qtd_produto) VALUES (?, ?, ?)", (idProduto[0], FKComanda, quantidade))
+                conexao.commit()
+
+                stop_usu = input("DESEJA CONTINUAR LANCANDO? (s/n)")
+                if stop_usu == 's':
+                    stop = False
+                else:
+                    stop = True
+
 
 def Operador(operador): #BUSACNDO NA TABELA USUARIO QUEM FOI O GARÇOM QUE ABRIU A COMANDA
     cursor.execute(f'SELECT nm_usuario FROM Usuario WHERE id_usuario={operador};')
