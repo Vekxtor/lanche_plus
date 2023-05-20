@@ -23,20 +23,21 @@ def Escolha():
 def Login():
     usuario = int(input("DIGITE SUA SENHA: "))
     cursor.execute("SELECT senha, nm_usuario FROM Usuario WHERE senha = ?", (usuario,))
-    login = []
     print('\033[32mCARREGANDO INFORMAÇÕES...\033[37m')
-    for login in cursor.fetchall():
-        if usuario == login[0]:
-            print(f'OPERADOR: \033[38;5;208m{login[1]}\033[37m')
-            Comanda()
 
-        else:
-            print(f'USUÁRIO NÃO LOCALIZADO NO BANCO DE DADOS')
-        break
+    login = cursor.fetchone()  # Recupera apenas um resultado
+
+    if login is not None and usuario == login[0]:
+        print(f'OPERADOR: \033[38;5;208m{login[1]}\033[37m')
+        Comanda()
+    else:
+        print('\033[91mSENHA INVÁLIDA\033[0m')
+
+
     
 def Comanda():
-    comanda_off = int(input("DIGITE O NUMERO DA COMANDA: ")) # COMANDA DE MANIPULÇÃO DO OPERADOR
-    # BUSCANDO NO BANCO DE DADOS SE A COMANDA ESTÁ DISPONÍVEL
+    comanda_off = int(input("DIGITE O NUMERO DA COMANDA: ")) #COMANDA DE MANIPULÇÃO DO OPERADOR
+    #BUSCANDO NO BANCO DE DADOS SE A COMANDA ESTÁ DISPONÍVEL
     cursor.execute("SELECT id_comanda, nmr_comanda, nm_comanda, dt_aberto_comanda, usuario_id FROM Comanda")
     comanda_on = [] # COMANDA DE CONSULTA
     for comanda_on in cursor.fetchall():
@@ -47,6 +48,11 @@ def Comanda():
             print(f'\033[33mCOMANDA: \033[37m{comanda_on[1]}\n\033[33mMESA: \033[37m{comanda_on[2]}\033[33m\nABERTO EM: \033[37m{comanda_on[3]}\033[33m')
             Operador(operador)
             Produtos(numero_da_comanda)
+
+        else:
+            print('\033[91m' + 'ESTA COMANDA ESTÁ VAZIA\nDIGITE O NÚMERO DA MESA: ' + '\033[0m')
+            NmrMesa = int(input())
+
 
 def Operador(operador): #BUSACNDO NA TABELA USUARIO QUEM FOI O GARÇOM QUE ABRIU A COMANDA
     cursor.execute(f'SELECT nm_usuario FROM Usuario WHERE id_usuario={operador};')
@@ -84,8 +90,9 @@ def Produtos(comanda):
             
 
 # SISTEMA DE ESCOLHA DE PRODUTOS
-print('-'*50+'\n\033[33mBEM VINDO AO SISTEMA DE LANÇAMENTO DA LANCHE+\033[37m \n'+'-'*50)
-Login()
+while True:    
+    print('-'*50+'\n\033[33mBEM VINDO AO SISTEMA DE LANÇAMENTO DA LANCHE+\033[37m \n'+'-'*50)
+    Login()
 
 conexao.commit()
 conexao.close()
