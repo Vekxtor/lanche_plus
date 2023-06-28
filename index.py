@@ -38,30 +38,43 @@ def Login():
 def Comanda(id_usuario):
     num_comanda = int(input("DIGITE O NUMERO DA COMANDA: ")) #COMANDA DE MANIPULÇÃO DO OPERADOR
     #BUSCANDO NO BANCO DE DADOS SE A COMANDA ESTÁ DISPONÍVEL
-    sql = 'SELECT c.id_comanda FROM Comanda c WHERE c.nmr_comanda = ?'
-    valores = [num_comanda]
-    
-    for res in cursor.execute(sql, valores):
-        idProdutoComanda = res[0]
+    sql = f'SELECT COUNT(comanda_id)  FROM ProdutoComanda pc JOIN Comanda c ON pc.comanda_id = c.id_comanda WHERE c.nmr_comanda = ?'
+    for res in cursor.execute(sql, [num_comanda]):
+        if res[0] > 0:
+            VerifComanda = True
+        else:
+            VerifComanda = False
 
-    sql = f'SELECT c.nmr_comanda, c.nm_comanda, c.dt_aberto_comanda, u.nm_usuario FROM Comanda c JOIN Usuario u ON c.usuario_id = u.id_usuario  WHERE C.nmr_comanda = ?'
-    valores = [num_comanda]
-    
-    for res in cursor.execute(sql, valores):
-        print('='*50)
-        print(f'FICHA {res[0]} | MESA {res[1]} | ABERTO {res[2]} P/ {res[3]}')
-    
-    sql = 'SELECT p.cd_produto, p.nm_produto, pc.qtd_produto, pc.lancamento, p.vlr_produto FROM ProdutoComanda pc JOIN Produto p ON p.id_produto = pc.produto_id JOIN Comanda c ON c.id_comanda = pc.comanda_id WHERE pc.comanda_id = ?'
-    valores = [idProdutoComanda]
+    if VerifComanda == True:
+        sql = 'SELECT c.id_comanda FROM Comanda c WHERE c.nmr_comanda = ?'
+        valores = [num_comanda]
+        
+        for res in cursor.execute(sql, valores):
+            idProdutoComanda = res[0]
 
-    vlrtotal = 0
-    for res in cursor.execute(sql, valores):
-        qtd = res[2] 
-        vlr = res[4]
-        qtdvlr = qtd * vlr
-        vlrtotal += qtdvlr
-        print(f'{res[0]}) {res[1]}\nR$ {res[4]}0 {res[2]}xUN R$ {qtdvlr}0 | {res[3]}\n')
+        sql = f'SELECT c.nmr_comanda, c.nm_comanda, c.dt_aberto_comanda, u.nm_usuario FROM Comanda c JOIN Usuario u ON c.usuario_id = u.id_usuario  WHERE C.nmr_comanda = ?'
+        valores = [num_comanda]
+        
+        for res in cursor.execute(sql, valores):
+            print('='*50)
+            print(f'FICHA {res[0]} | MESA {res[1]} | ABERTO {res[2]} P/ {res[3]}')
+        
+        sql = 'SELECT p.cd_produto, p.nm_produto, pc.qtd_produto, pc.lancamento, p.vlr_produto FROM ProdutoComanda pc JOIN Produto p ON p.id_produto = pc.produto_id JOIN Comanda c ON c.id_comanda = pc.comanda_id WHERE pc.comanda_id = ?'
+        valores = [idProdutoComanda]
+
+        vlrtotal = 0
+        for res in cursor.execute(sql, valores):
+            qtd = res[2] 
+            vlr = res[4]
+            qtdvlr = qtd * vlr
+            vlrtotal += qtdvlr
+            print(f'{res[0]}) {res[1]}\nR$ {res[4]}0 {res[2]}xUN R$ {qtdvlr}0 | {res[3]}\n')
         print(f'VALOR TOTAL DA COMANDA: R$ {vlrtotal}0')
+
+    elif VerifComanda == False:
+        print('COMANDA VAZIA!')
+        CriarComanda(num_comanda, id_usuario)
+
 
 
 
