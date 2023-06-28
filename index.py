@@ -35,26 +35,35 @@ def Login():
     else:
         print('\033[91mSENHA INVÁLIDA\033[0m')
 
-
-    
 def Comanda(id_usuario):
-    comanda_off = int(input("DIGITE O NUMERO DA COMANDA: ")) #COMANDA DE MANIPULÇÃO DO OPERADOR
+    num_comanda = int(input("DIGITE O NUMERO DA COMANDA: ")) #COMANDA DE MANIPULÇÃO DO OPERADOR
     #BUSCANDO NO BANCO DE DADOS SE A COMANDA ESTÁ DISPONÍVEL
-    cursor.execute("SELECT id_comanda, nmr_comanda, nm_comanda, dt_aberto_comanda, usuario_id FROM Comanda WHERE nmr_comanda = ?", (comanda_off,))
-    comanda_on = cursor.fetchone()
+    sql = 'SELECT c.id_comanda FROM Comanda c WHERE c.nmr_comanda = ?'
+    valores = [num_comanda]
     
-    if comanda_on is not None and comanda_off == comanda_on[1]:
-        numero_da_comanda = comanda_on[0]
-        operador = comanda_on[4]
-        
-        print("ESSA COMANDA JÁ ESTÁ EM UTILIZAÇÃO!")
-        print(f'\033[33mCOMANDA: \033[37m{comanda_on[1]}\n\033[33mMESA: \033[37m{comanda_on[2]}\033[33m\nABERTO EM: \033[37m{comanda_on[3]}\033[33m')
-        Operador(operador)
-        Produtos(numero_da_comanda)
+    for res in cursor.execute(sql, valores):
+        idProdutoComanda = res[0]
 
-    else:
-        print('\033[91m' + 'ESTA COMANDA ESTÁ VAZIA' + '\033[0m')
-        CriarComanda(comanda_off, id_usuario)
+    sql = f'SELECT c.nmr_comanda, c.nm_comanda, c.dt_aberto_comanda, u.nm_usuario FROM Comanda c JOIN Usuario u ON c.usuario_id = u.id_usuario  WHERE C.nmr_comanda = ?'
+    valores = [num_comanda]
+    
+    for res in cursor.execute(sql, valores):
+        print('='*50)
+        print(f'FICHA {res[0]} | MESA {res[1]} | ABERTO {res[2]} P/ {res[3]}')
+    
+    sql = 'SELECT p.cd_produto, p.nm_produto, pc.qtd_produto, pc.lancamento, p.vlr_produto FROM ProdutoComanda pc JOIN Produto p ON p.id_produto = pc.produto_id JOIN Comanda c ON c.id_comanda = pc.comanda_id WHERE pc.comanda_id = ?'
+    valores = [idProdutoComanda]
+
+    vlrtotal = 0
+    for res in cursor.execute(sql, valores):
+        qtd = res[2] 
+        vlr = res[4]
+        qtdvlr = qtd * vlr
+        vlrtotal += qtdvlr
+        print(f'{res[0]}) {res[1]}\nR$ {res[4]}0 {res[2]}xUN R$ {qtdvlr}0 | {res[3]}\n')
+        print(f'VALOR TOTAL DA COMANDA: R$ {vlrtotal}0')
+
+
 
 def CriarComanda(comanda, id_usuario):
     NmrMesa = int(input('DIGITE O NÚMERO DA MESA: '))
@@ -128,9 +137,9 @@ def Produtos(comanda):
             
 
 # SISTEMA DE ESCOLHA DE PRODUTOS
-while True:    
-    print('-'*50+'\n\033[33mBEM VINDO AO SISTEMA DE LANÇAMENTO DA LANCHE+\033[37m \n'+'-'*50)
-    Login()
+  
+print('-'*50+'\n\033[33mBEM VINDO AO SISTEMA DE LANÇAMENTO DA LANCHE+\033[37m \n'+'-'*50)
+Login()
 
 conexao.commit()
 conexao.close()
