@@ -21,7 +21,7 @@ def Escolha():
         if escolha == escolha:
             print(f'{escolha} = {produto_banco}')
 
-def Login():
+def Login(): #LOGIN DO USUARIO/funcionario
     usuario = int(input("DIGITE SUA SENHA: "))
     cursor.execute("SELECT senha, nm_usuario, id_usuario FROM Usuario WHERE senha = ?", (usuario,))
     print('\033[32mCARREGANDO INFORMAÇÕES...\033[37m')
@@ -35,12 +35,14 @@ def Login():
     else:
         print('\033[91mSENHA INVÁLIDA\033[0m')
 
-def Comanda(id_usuario):
+def Comanda(id_usuario): #PEDINDO COMANDA PARA INICIAR AS OPERAÇÕES DESEJADAS
+
     num_comanda = int(input("DIGITE O NUMERO DA COMANDA: ")) #COMANDA DE MANIPULÇÃO DO OPERADOR
-    #BUSCANDO NO BANCO DE DADOS SE A COMANDA ESTÁ DISPONÍVEL
-    sql = f'SELECT COUNT(comanda_id)  FROM ProdutoComanda pc JOIN Comanda c ON pc.comanda_id = c.id_comanda WHERE c.nmr_comanda = ?'
+    
+    #VERIFICANDO SE HÁ PRODUTOS NA COMANDA
+    sql = f'SELECT COUNT(pc.comanda_id) FROM ProdutoComanda pc JOIN Comanda c on c.id_comanda = pc.comanda_id WHERE c.nmr_comanda = ?'
     for res in cursor.execute(sql, [num_comanda]):
-        if res[0] > 0:
+        if int(res[0]) > 0:
             VerifComanda = True
         else:
             VerifComanda = False
@@ -70,13 +72,12 @@ def Comanda(id_usuario):
             vlrtotal += qtdvlr
             print(f'{res[0]}) {res[1]}\nR$ {res[4]}0 {res[2]}xUN R$ {qtdvlr}0 | {res[3]}\n')
         print(f'VALOR TOTAL DA COMANDA: R$ {vlrtotal}0')
+        print('='*50)
+        Lancamento(num_comanda)
 
     elif VerifComanda == False:
         print('COMANDA VAZIA!')
         CriarComanda(num_comanda, id_usuario)
-
-
-
 
 def CriarComanda(comanda, id_usuario):
     NmrMesa = int(input('DIGITE O NÚMERO DA MESA: '))
@@ -112,7 +113,6 @@ def Lancamento(comanda):
                     stop = False
                 else:
                     stop = True
-
 
 def Operador(operador): #BUSACNDO NA TABELA USUARIO QUEM FOI O GARÇOM QUE ABRIU A COMANDA
     cursor.execute(f'SELECT nm_usuario FROM Usuario WHERE id_usuario={operador};')
