@@ -6,6 +6,9 @@ import sqlite3
 from datetime import datetime
 conexao = sqlite3.connect('bank\BancoProdutos.sqlite3')
 cursor = conexao.cursor()
+#PEGANDO O HORÁRIO DO AGORA...
+agora = datetime.now()
+horario_atual = agora.strftime("%H:%M:%S")
 #COMANDOS SQL EM FUNÇÕES
 def Menu():
     cursor.execute("SELECT id_produto, nm_produto, vlr_produto FROM Produto;")
@@ -81,8 +84,6 @@ def Comanda(id_usuario): #PEDINDO COMANDA PARA INICIAR AS OPERAÇÕES DESEJADAS
 
 def CriarComanda(comanda, id_usuario):
     NmrMesa = int(input('DIGITE O NÚMERO DA MESA: '))
-    agora = datetime.now()
-    horario_atual = agora.strftime("%H:%M:%S")
     
     cursor.execute("INSERT INTO Comanda (nmr_comanda, nm_comanda, dt_aberto_comanda, usuario_id) VALUES (?, ?, ?, ?)", (comanda, NmrMesa, horario_atual, id_usuario,))
     conexao.commit()
@@ -90,6 +91,7 @@ def CriarComanda(comanda, id_usuario):
     Lancamento(comanda) #ENVIANDO PARA A FUNÇÃO DE LANÇAMENTO QUAL É O NÚMERO DA COMANDA QUE FOI DIGITADO PELO USUARIO
 
 def Lancamento(comanda):
+    
     cursor.execute("SELECT id_comanda, nmr_comanda FROM Comanda WHERE nmr_comanda = ?", (comanda,))
     idComanda = cursor.fetchone()
 
@@ -101,14 +103,22 @@ def Lancamento(comanda):
             codProduto = int(input("DIGITE O CÓDIGO DO PRODUTO:\n"))
             quantidade = int(input("DIGITE A QUANTIDADE DESEJADA: "))
 
-            #DESCOBRINDO QUAL É O ID_PRODUTO
-            cursor.execute("SELECT id_produto, cd_produto, nm_produto FROM Produto WHERE cd_produto = ?", (codProduto,))
-            idProduto = cursor.fetchone()
-            if idProduto is not None and idProduto[1] == codProduto:
-                cursor.execute("INSERT INTO ProdutoComanda (produto_id, comanda_id, qtd_produto) VALUES (?, ?, ?)", (idProduto[0], FKComanda, quantidade))
-                conexao.commit()
+            sql = f'SELECT p.cd_produto, p.nm_produto FROM Produto p WHERE p.cd_produto = ?'
+            for res in cursor.execute(sql, [codProduto]):
+                proceder = input(f'{res[0]} | VOCÊ DESEJA LANÇAR {quantidade}xUND de {res[1]}? (s/n)\n')
+                if proceder == 's':
+                    #DESCOBRINDO QUAL É O ID_PRODUTO
+                    cursor.execute("SELECT id_produto, cd_produto, nm_produto FROM Produto WHERE cd_produto = ?", (codProduto,))
+                    idProduto = cursor.fetchone()
+                    if idProduto is not None and idProduto[1] == codProduto:
+                        cursor.execute("INSERT INTO ProdutoComanda (produto_id, comanda_id, qtd_produto, lancamento) VALUES(?, ?, ?, ?) ", (idProduto[0], FKComanda, quantidade, horario_atual))
+                        conexao.commit()
 
-                stop_usu = input("DESEJA CONTINUAR LANCANDO? (s/n)")
+                        stop_usu = input("DESEJA CONTINUAR LANCANDO? (s/n)\n")
+                else:
+                    stop = False
+
+            
                 if stop_usu == 's':
                     stop = False
                 else:
