@@ -34,7 +34,12 @@ def Login(): #LOGIN DO USUARIO/funcionario
     if login is not None and usuario == login[0]:
         id_usuario = login[2]
         print(f'OPERADOR: \033[38;5;208m{login[1]}\033[37m')
-        Comanda(id_usuario)
+        
+        escolha = input('(1) GERENCIAR COMANDAS\n(2) DAR BAIXA EM COMANDA\n')
+        if escolha == '1':
+            Comanda(id_usuario)
+        if escolha == '2':
+            Fechar(id_usuario)
     else:
         print('\033[91mSENHA INVÁLIDA\033[0m')
 
@@ -157,7 +162,86 @@ def Produtos(comanda):
             exibicao_df = pd.DataFrame(exibicao)
             print(exibicao_df.to_string(index=False))
 
-            
+def Fechar(id_usuario):
+    print('='*50)
+    print("\033[1;32mINICIALIZANDO MAPA...\033[0m")
+    sql = 'SELECT c.nmr_comanda FROM Comanda c'
+    for res in cursor.execute(sql):
+        print(f' {res[0]}')
+        print('='*5)
+
+    NMRComanda = input()
+    print("\033[1;32mCARREGANDO COMANDA...\033[0m")
+    sql = f'SELECT c.nmr_comanda, c.nm_comanda, c.dt_aberto_comanda, u.nm_usuario FROM Comanda c JOIN Usuario u ON c.usuario_id = u.id_usuario WHERE c.nmr_comanda = ? '
+    for res in cursor.execute(sql, [NMRComanda]):
+        print(f'\033[33mMESA: \033[37m{res[1]} \033[33mABERTO EM: \033[37m{res[2]}\n\033[33mCOMANDA: \033[37m{res[0]} \033[33mOPERADOR: \033[37m{res[3]}')
+
+    print('\033[34mler mais...\033[37m')
+    input()
+    sql = f'SELECT pc.qtd_produto, pc.lancamento, p.nm_produto, p.vlr_produto, p.cd_produto FROM ProdutoComanda pc JOIN Comanda c ON c.id_comanda = pc.comanda_id JOIN Produto p ON p.id_produto = pc.produto_id WHERE c.nmr_comanda = ?'
+    vlrTotal = 0 #CALCULANDO O VALOR DOS PRODUTOS REPETIDOS NA COMANDA
+    informacoes = ''
+    for res in cursor.execute(sql, [NMRComanda]):
+        qtdvalor = res[0] * res[3]
+        vlrTotal += qtdvalor
+        linha = '='*50
+        informacoes += f'\n{res[4]}) {res[2]} R$ {res[3]}0\nLANÇAMENTO ÀS {res[1]}\n{res[0]}xUN R$ {qtdvalor}0\n{linha}'
+    print("\033[1;32mCARREGANDO PRODUTOS...\033[0m")
+    print(informacoes)
+    print('\n')
+    print("\033[33mPRECIONE A TECLA 'ENTER' PARA PROCEGUIR...\033[0m")
+    input()
+    fmtVlrTotal = "{:.2f}".format(vlrTotal)
+    print(f'O VALOR TOTAL DA COMANDA É {fmtVlrTotal}')
+    pagamento = int(input('VALOR PAGO PELO CLIENTE\n'))
+    if pagamento < vlrTotal:
+        falta = vlrTotal - pagamento
+        print(f'\033[31m{("{:.2f}".format(falta))}\033[37m')
+        resto = int(input())
+        if resto > falta:
+            troco = falta - resto
+            print(("{:.2f}".format(troco)))
+    if pagamento > vlrTotal:
+        troco = pagamento - vlrTotal
+        print(("{:.2f}".format(troco)))
+
+    print("\033[33mPARA FECHAR COMANDA 'ENTER'...\033[0m")
+    input()
+
+    #CARREGANDO INFORMAÇÕES QUE SERÃO SALVAS NA TABELA HISTORICO COM TEXTO...
+    sql = 'SELECT c.nmr_comanda, c.nm_comanda, c.dt_aberto_comanda, u.nm_usuario FROM Comanda c JOIN Usuario u ON u.id_usuario = c.usuario_id WHERE c.nmr_comanda = ?'
+    for res in cursor.execute(sql, [NMRComanda]):
+        H_nmrComanda = res[0]
+        H_nmMesa = res[1]
+        H_hrAbriu = res[2]
+        H_opAbriu = res[3]
+
+    H_descricao = informacoes
+    H_vlrTotal = ("{:.2f}".format(vlrTotal))
+    H_hrFechou = horario_atual
+    
+    sql = 'SELECT u.nm_usuario FROM Usuario u WHERE u.id_usuario = ?'
+    for res in cursor.execute(sql, [id_usuario]):
+        H_opFechou = res[0]
+    
+    valores = [H_nmrComanda, H_nmMesa, H_hrAbriu, H_opAbriu, H_descricao, H_vlrTotal, H_hrFechou, H_opFechou]
+    #ENIANDO INFORMAÇÕES CARREGADAS...
+    sql = '''
+        INSERT INTO Historico
+            (nmr_comanda, nm_mesa, hr_abriu, op_abriu, descricao, vlr_total, hr_fechou, op_fechou)
+            VALUES(?, ?, ?, ?, ?, ?, ?, ?);
+    '''
+    cursor.execute(sql, valores)
+
+    #DESCOBRINDO O ID DA COMANDA
+    sql = 'SELECT c.id_comanda FROM Comanda c WHERE c.nmr_comanda = ?'
+    for res in cursor.execute(sql, [NMRComanda]):
+        idComanda = res[0]
+
+    #LIBERANDO COMANDA DO BANCO DE DADOS...
+    cursor.execute('DELETE FROM Comanda WHERE id_comanda= ?', [idComanda])
+    cursor.execute('DELETE FROM ProdutoComanda WHERE id_ProdutoComanda=?', [idComanda])
+
 
 # SISTEMA DE ESCOLHA DE PRODUTOS
   
